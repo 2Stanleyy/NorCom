@@ -1,0 +1,210 @@
+.marquee-ticker-container {
+  width: 100%;
+  background-color: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Space Mono', monospace;
+  border-top: 2px solid #3a3a3a;
+  position: relative;
+  height: 36px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  z-index: 1001; /* Higher than the app-footer to ensure visibility */
+}
+
+.marquee-ticker {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marquee 40s linear infinite;
+  animation-play-state: running;
+  height: 100%;
+  padding: 0 10px;
+  will-change: transform;
+}
+
+/* Pause animation on hover for easier reading */
+.marquee-ticker-container:hover .marquee-ticker {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Duplicate the ticker content for seamless scrolling */
+.marquee-ticker > * {
+  margin-right: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Market indices styling */
+.marquee-index {
+  background-color: #16161e;
+  padding: 4px 8px;
+  border: 1px solid #3a3a3a;
+  margin-right: 20px;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: bold;
+  height: 22px;
+}
+
+.index-name {
+  margin-right: 8px;
+  color: #a0a0a0;
+}
+
+.index-value {
+  margin-right: 6px;
+  color: #ffffff;
+}
+
+.index-change {
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Stock item styling */
+.marquee-stock {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 4px 6px;
+  background-color: #16161e;
+  border: 1px solid #3a3a3a;
+  margin-right: 20px;
+  height: 22px;
+  position: relative;
+}
+
+.marquee-stock::before {
+  content: "";
+  width: 4px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: #3a3a3a;
+}
+
+.stock-symbol {
+  font-weight: bold;
+  margin-right: 6px;
+  color: #e0e0e0;
+  padding: 0 2px;
+  min-width: 45px;
+  text-align: center;
+}
+
+.stock-price {
+  margin-right: 6px;
+  font-weight: bold;
+  color: #ffffff;
+  position: relative;
+  animation: flicker 5s infinite;
+}
+
+.stock-change {
+  padding: 0 5px;
+  font-weight: bold;
+  min-width: 90px;
+  text-align: right;
+}
+
+/* Color indicators for positive/negative changes */
+.positive {
+  color: #7AFFB2;
+}
+
+.negative {
+  color: #e05d5d;
+}
+
+/* Add a flashing effect for recent changes */
+@keyframes flicker {
+  0%, 91%, 93%, 95%, 100% { opacity: 1; }
+  92%, 94%, 96% { opacity: 0.8; }
+}
+
+/* Change animation for rapidly changing stocks */
+.stock-price.changed {
+  animation: flash 0.5s;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Market status indicator */
+.market-status-indicator {
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 0 15px;
+  border-left: 1px solid #3a3a3a;
+  white-space: nowrap;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #16161e;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 10;
+  box-shadow: -10px 0 10px -5px rgba(10, 10, 10, 0.8);
+}
+
+.status-open {
+  color: #7AFFB2;
+  animation: blink 2s infinite;
+}
+
+.status-closed {
+  color: #e05d5d;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Loading state */
+.marquee-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: bold;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+  background-color: #0a0a0a;
+  animation: loadBlink 1.5s infinite;
+  text-transform: uppercase;
+}
+
+@keyframes loadBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .marquee-index, .marquee-stock {
+    font-size: 0.65rem;
+  }
+  
+  .market-status-indicator {
+    font-size: 0.65rem;
+  }
+}
