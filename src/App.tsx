@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppProvider } from './context/AppContext';
 import Dashboard from './components/Dashboard';
 import ThreeColumnLayout from './components/Layout/ThreeColumnLayout';

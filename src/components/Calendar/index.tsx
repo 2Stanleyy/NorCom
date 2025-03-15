@@ -30,6 +30,42 @@ interface Task {
   color?: string;
 }
 
+// Digital Clock Component
+const DigitalClock: React.FC = () => {
+  const [time, setTime] = useState(new Date());
+  
+  useEffect(() => {
+    // Update time every second
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+    
+    // Clear interval on component unmount
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Get hours in 12-hour format
+  const hours = time.getHours() % 12 || 12;
+  
+  // Get minutes with leading zero if needed
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+  
+  // Get seconds with leading zero if needed
+  const seconds = time.getSeconds().toString().padStart(2, '0');
+  
+  // AM or PM
+  const ampm = time.getHours() >= 12 ? 'PM' : 'AM';
+  
+  return (
+    <div className="digital-clock">
+      <div className="clock-display">
+        <span className="clock-time">{hours}:{minutes}:{seconds}</span>
+        <span className="clock-ampm">{ampm}</span>
+      </div>
+    </div>
+  );
+};
+
 const Calendar: React.FC = () => {
   const { generateWeeklySchedule, tasks, currentSchedule } = useAppContext();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -52,6 +88,25 @@ const Calendar: React.FC = () => {
     }
     setMappedSchedule(getScheduledTasks());
   }, [currentSchedule]);
+  
+  // Add keyboard shortcut for schedule generation (Ctrl+G)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if Ctrl+G is pressed
+      if (e.ctrlKey && e.key === 'g') {
+        e.preventDefault(); // Prevent default browser behavior
+        generateWeeklySchedule();
+      }
+    };
+    
+    // Add event listener
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [generateWeeklySchedule]);
   
   const handleGenerateSchedule = () => {
     // Call generate schedule without arguments since it's not expecting any
@@ -173,13 +228,10 @@ const Calendar: React.FC = () => {
           {getDayName(selectedDate)} <span className="date-highlight">{format(parseISO(selectedDate), 'MM/dd/yyyy')}</span>
         </div>
         
-          <button 
-          className="generate-schedule-button"
-            onClick={handleGenerateSchedule}
-            title="Generate a weekly schedule using tasks from the Task Manager"
-          >
-          Generate Schedule
-          </button>
+        {/* Simplified clock container with only the clock */}
+        <div className="calendar-clock-container">
+          <DigitalClock />
+        </div>
       </div>
       
       <div className="calendar-content">
@@ -279,9 +331,9 @@ const Calendar: React.FC = () => {
             <div className="no-tasks-message">
               No tasks scheduled for {getDayName(selectedDate)}. 
               {tasks.length > 0 ? (
-                <p>Click the "Generate Schedule" button to create a weekly schedule from your tasks.</p>
+                <p>Press Ctrl+G to generate a weekly schedule from your tasks.</p>
               ) : (
-                <p>Add tasks in the Task Manager first, then generate a schedule.</p>
+                <p>Add tasks in the Task Manager first, then press Ctrl+G to generate a schedule.</p>
               )}
             </div>
           )}

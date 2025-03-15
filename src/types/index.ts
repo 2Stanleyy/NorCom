@@ -5,6 +5,7 @@ export interface Task {
   color: string;
   category: string;
   estimatedHours: number;
+  completed?: boolean; // Optional property to track task completion
 }
 
 export interface ScheduledTask extends Task {
@@ -15,10 +16,11 @@ export interface ScheduledTask extends Task {
 }
 
 export interface TaskProgress {
+  id: string;
   taskId: string;
-  completedDate: string;
-  actualHours: number;
-  completed: boolean;
+  date: string;
+  hours: number;
+  category: string;
 }
 
 export interface WeeklySchedule {
@@ -33,6 +35,17 @@ export interface UserStats {
   totalHoursLogged: number;
   streakDays: number;
   taskCategorySummary: Record<string, number>;
+}
+
+export interface UserProfile {
+  agentId: string;
+  codename: string;
+  level: number;
+  xp: number;
+  xpToNextLevel: number;
+  clearanceLevel: string;
+  tasksCompleted: number;
+  missionHistory: number;
 }
 
 export interface MeditationSession {

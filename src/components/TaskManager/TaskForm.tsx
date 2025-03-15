@@ -28,7 +28,8 @@ const TaskForm: React.FC = () => {
       description: description.trim(),
       category: categoryName,
       color: getCategoryColor(categoryName),
-      estimatedHours
+      estimatedHours,
+      completed: false // Initialize task as not completed
     };
     
     addTask(newTask);

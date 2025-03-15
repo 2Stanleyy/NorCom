@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { 
   getCategoryColor, 
@@ -15,10 +15,11 @@ import './CurrentMission.css';
 interface ScheduleItem extends ScheduledTask {
   date?: string;
   time?: string;
+  calculatedDayOfWeek?: number;
 }
 
 const CurrentMission: React.FC = () => {
-  const { tasks, currentSchedule } = useAppContext();
+  const { tasks, currentSchedule, completeTask, gainXP } = useAppContext();
   const [dailyMissions, setDailyMissions] = useState<Mission[]>([]);
   const [weeklyMissions, setWeeklyMissions] = useState<Mission[]>([]);
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
@@ -27,6 +28,9 @@ const CurrentMission: React.FC = () => {
     task?: ScheduleItem;
     timeUntil?: string;
   }>({ type: 'none' });
+  
+  // Add a ref to store completed mission IDs to prevent XP exploits
+  const completedMissionsRef = useRef<Set<string>>(new Set());
 
   // Get the correct schedule data - matching Calendar component's approach exactly
   const getScheduledTasks = (): ScheduleItem[] => {
@@ -247,9 +251,17 @@ const CurrentMission: React.FC = () => {
         
         console.log("Found upcoming future task:", nextTask, "Days until:", daysUntil);
         
+        // Calculate the actual future date for display
+        const futureDate = new Date(today);
+        futureDate.setDate(today.getDate() + daysUntil);
+        const futureDayOfWeek = futureDate.getDay(); // 0 = Sunday in JavaScript
+        
         setCurrentScheduledMission({
           type: 'upcoming',
-          task: nextTask,
+          task: {
+            ...nextTask,
+            calculatedDayOfWeek: futureDayOfWeek // Add this property for display purposes
+          },
           timeUntil: `in ${daysUntil} day${daysUntil > 1 ? 's' : ''}`
         });
         return;
@@ -383,23 +395,157 @@ const CurrentMission: React.FC = () => {
     return () => clearTimeout(timerId);
   }, [tasks]);
   
+  // Load persisted completed missions from localStorage on mount
+  useEffect(() => {
+    const savedCompletedMissions = localStorage.getItem('completedMissions');
+    
+    if (savedCompletedMissions) {
+      completedMissionsRef.current = new Set(JSON.parse(savedCompletedMissions));
+    }
+    
+    // Clean up completed missions older than 7 days when component mounts
+    const cleanupCompletedMissions = () => {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
+      
+      const savedMissionData = localStorage.getItem('missionCompletionDates');
+      if (savedMissionData) {
+        const completionDates: Record<string, string> = JSON.parse(savedMissionData);
+        let shouldUpdate = false;
+        
+        Object.entries(completionDates).forEach(([missionId, dateStr]) => {
+          const completionDate = new Date(dateStr);
+          if (completionDate < sevenDaysAgo) {
+            // Remove old entries
+            completedMissionsRef.current.delete(missionId);
+            delete completionDates[missionId];
+            shouldUpdate = true;
+          }
+        });
+        
+        if (shouldUpdate) {
+          localStorage.setItem('missionCompletionDates', JSON.stringify(completionDates));
+          localStorage.setItem('completedMissions', JSON.stringify([...completedMissionsRef.current]));
+        }
+      }
+    };
+    
+    cleanupCompletedMissions();
+  }, []);
+  
   const toggleMissionComplete = (id: string, type: 'daily' | 'weekly') => {
     if (type === 'daily') {
-      setDailyMissions(prevMissions => 
-        prevMissions.map(mission => 
+      setDailyMissions(prevMissions => {
+        // Find the mission to update
+        const mission = prevMissions.find(m => m.id === id);
+        
+        // If mission not found or already completed, don't do anything
+        if (!mission) return prevMissions;
+        
+        // If it's already completed, prevent un-completing
+        if (mission.completed) {
+          return prevMissions;
+        }
+        
+        // Check if we've already awarded XP for this mission
+        if (!completedMissionsRef.current.has(id)) {
+          // Determine base hours based on mission category
+          let baseHours = 1; // Default is 1 hour
+          
+          // Assign hours based on mission category or description
+          if (mission.category === "Health" || mission.description.includes("exercise")) {
+            baseHours = 2;
+          } else if (mission.category === "Productivity") {
+            baseHours = 3;
+          } else if (mission.category === "Education" || mission.category === "Growth") {
+            baseHours = 2;
+          }
+          
+          // Calculate XP directly (20 base + 5 per hour)
+          const xpAmount = 20 + (baseHours * 5);
+          
+          // Award XP directly
+          gainXP(xpAmount);
+          
+          // Record that we've completed this mission
+          completedMissionsRef.current.add(id);
+          
+          // Store the completion date for cleanup
+          const completionDates = JSON.parse(localStorage.getItem('missionCompletionDates') || '{}');
+          completionDates[id] = new Date().toISOString();
+          localStorage.setItem('missionCompletionDates', JSON.stringify(completionDates));
+          
+          // Save to localStorage
+          localStorage.setItem('completedMissions', JSON.stringify([...completedMissionsRef.current]));
+          
+          console.log(`Awarded ${xpAmount} XP for completing ${mission.title} mission`);
+        } else {
+          console.log(`Mission ${mission.title} already awarded XP previously`);
+        }
+        
+        // Update the mission state
+        return prevMissions.map(mission => 
           mission.id === id 
-            ? { ...mission, completed: !mission.completed } 
+            ? { ...mission, completed: true } 
             : mission
-        )
-      );
+        );
+      });
     } else {
-      setWeeklyMissions(prevMissions => 
-        prevMissions.map(mission => 
+      setWeeklyMissions(prevMissions => {
+        // Find the mission to update
+        const mission = prevMissions.find(m => m.id === id);
+        
+        // If mission not found or already completed, don't do anything
+        if (!mission) return prevMissions;
+        
+        // If it's already completed, prevent un-completing
+        if (mission.completed) {
+          return prevMissions;
+        }
+        
+        // Check if we've already awarded XP for this mission
+        if (!completedMissionsRef.current.has(id)) {
+          // Weekly missions are worth more
+          let baseHours = 3; // Default is 3 hours for weekly missions
+          
+          // Assign hours based on mission category or description
+          if (mission.category === "Health" || mission.description.includes("exercise")) {
+            baseHours = 4;
+          } else if (mission.category === "Productivity") {
+            baseHours = 5;
+          } else if (mission.category === "Education" || mission.category === "Growth") {
+            baseHours = 4;
+          }
+          
+          // Calculate XP directly (20 base + 5 per hour)
+          const xpAmount = 20 + (baseHours * 5);
+          
+          // Award XP directly
+          gainXP(xpAmount);
+          
+          // Record that we've completed this mission
+          completedMissionsRef.current.add(id);
+          
+          // Store the completion date for cleanup
+          const completionDates = JSON.parse(localStorage.getItem('missionCompletionDates') || '{}');
+          completionDates[id] = new Date().toISOString();
+          localStorage.setItem('missionCompletionDates', JSON.stringify(completionDates));
+          
+          // Save to localStorage
+          localStorage.setItem('completedMissions', JSON.stringify([...completedMissionsRef.current]));
+          
+          console.log(`Awarded ${xpAmount} XP for completing ${mission.title} weekly mission`);
+        } else {
+          console.log(`Mission ${mission.title} already awarded XP previously`);
+        }
+        
+        // Update the mission state
+        return prevMissions.map(mission => 
           mission.id === id 
-            ? { ...mission, completed: !mission.completed } 
+            ? { ...mission, completed: true } 
             : mission
-        )
-      );
+        );
+      });
     }
   };
   
@@ -418,6 +564,20 @@ const CurrentMission: React.FC = () => {
   const getDayName = (day: number): string => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[day];
+  };
+
+  // Add a helper function to get the proper day name for display
+  const getDisplayDayName = (task: ScheduleItem | undefined): string => {
+    if (!task) return '';
+    
+    // If we have a calculated day (for future tasks), use that
+    if (task.calculatedDayOfWeek !== undefined) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return days[task.calculatedDayOfWeek];
+    }
+    
+    // Otherwise use the regular day of week
+    return getDayName(task.dayOfWeek || 0);
   };
 
   return (
@@ -440,7 +600,7 @@ const CurrentMission: React.FC = () => {
               {currentScheduledMission.type === 'current' 
                 ? `UNTIL ${formatTime(currentScheduledMission.task?.endHour || 0)}`
                 : currentScheduledMission.type === 'upcoming' 
-                  ? `STARTING ${currentScheduledMission.timeUntil} (${getDayName(currentScheduledMission.task?.dayOfWeek || 0)} at ${formatTime(currentScheduledMission.task?.startHour || 0)})`
+                  ? `STARTING ${currentScheduledMission.timeUntil} (${getDisplayDayName(currentScheduledMission.task)} at ${formatTime(currentScheduledMission.task?.startHour || 0)})`
                   : ''}
             </span>
             <span className="mission-category">{currentScheduledMission.task?.category}</span>

@@ -36,22 +36,64 @@
   font-family: 'Space Mono', monospace;
 }
 
-.generate-schedule-button {
-  background-color: #1a1a1a;
-  color: #e0e0e0;
-  border: 2px solid #3a3a3a;
-  padding: 8px 15px;
-  font-family: 'Space Mono', monospace;
-  font-weight: bold;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: background-color 0.2s;
+/* Replace the generate-schedule-button styles with clock styles */
+.calendar-clock-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.generate-schedule-button:hover {
-  background-color: #2a2a2a;
-  border-color: #4a4a4a;
+.digital-clock {
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0a0a;
+  border: 1px solid #3a3a3a;
+  border-radius: 2px;
+  padding: 4px 10px;
+  font-family: 'Space Mono', monospace;
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  min-width: 120px;
+  text-align: center;
+}
+
+.clock-display {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+}
+
+.clock-time {
+  font-size: 1.3rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.clock-ampm {
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.8;
+}
+
+/* Remove the clock-date related styles */
+
+/* Remove the generate-schedule-icon styles */
+.generate-schedule-icon,
+.schedule-icon,
+.generate-schedule-button {
+  display: none;
+}
+
+/* Media query for mobile responsiveness */
+@media (max-width: 480px) {
+  .digital-clock {
+    min-width: 120px;
+    padding: 3px 6px;
+  }
+  
+  .clock-time {
+    font-size: 1.1rem;
+  }
 }
 
 .calendar-content {

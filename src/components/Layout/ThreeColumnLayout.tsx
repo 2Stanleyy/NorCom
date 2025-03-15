@@ -2,6 +2,7 @@ import React, { ReactNode, useState } from 'react';
 import CurrentMission from '../CurrentMission';
 import TaskManager from '../TaskManager';
 import NewsWidget from '../NewsWidget';
+import ClassifiedResources from '../ClassifiedResources';
 import MarqueeStockTicker from '../MarqueeStockTicker';
 import './ThreeColumnLayout.css';
 
@@ -13,12 +14,13 @@ const ThreeColumnLayout: React.FC<ThreeColumnLayoutProps> = ({ children }) => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [showNews, setShowNews] = useState(true);
+  const [showResources, setShowResources] = useState(true);
   const [showTasks, setShowTasks] = useState(true);
 
   return (
     <div className="three-column-layout">
       <div className="content-wrapper">
-        {/* Left sidebar with News Widget */}
+        {/* Left sidebar with News Widget and Classified Resources */}
         <div className={`sidebar left-sidebar ${leftCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-header">
             <h3>FINANCIAL NEWS</h3>
@@ -31,6 +33,23 @@ const ThreeColumnLayout: React.FC<ThreeColumnLayoutProps> = ({ children }) => {
           </div>
           {!leftCollapsed && (
             <div className="sidebar-content">
+              {/* Classified Resources Section */}
+              <div className="sidebar-section-divider">
+                <div className="section-label">CLASSIFIED</div>
+                <button 
+                  className="toggle-section-button"
+                  onClick={() => setShowResources(!showResources)}
+                >
+                  {showResources ? '−' : '+'}
+                </button>
+              </div>
+              
+              {showResources && (
+                <div className="sidebar-section resources-section">
+                  <ClassifiedResources />
+                </div>
+              )}
+              
               <div className="sidebar-section-divider">
                 <div className="section-label">MARKET NEWS</div>
                 <button 

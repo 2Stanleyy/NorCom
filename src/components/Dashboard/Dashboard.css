@@ -64,13 +64,73 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+/* Secret agent styling for the header text */
+.content-section-header::before {
+  content: "//";
+  font-size: 1.2rem;
+  color: #e05d5d;
+  margin-right: 10px;
+  opacity: 0.8;
+  font-weight: normal;
+  letter-spacing: -1px;
+  display: inline-block;
+}
+
+/* Keyframes for blinking red dot */
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.7; }
+}
+
+/* Keyframes for text glitch effect */
+@keyframes textFade {
+  0% { opacity: 1; }
+  5% { opacity: 0.92; }
+  10% { opacity: 1; }
+  15% { opacity: 0.9; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* First child is the text "UNEMPLOYED" */
+.content-section-header > :first-child {
+  background: linear-gradient(90deg, #f0f0f0 85%, rgba(240, 240, 240, 0.3) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 8px rgba(224, 93, 93, 0.2), 0 0 1px rgba(240, 240, 240, 0.8);
+  position: relative;
+  padding: 0 5px;
+  border-left: 2px solid #3a3a3a;
+  border-right: 2px solid #3a3a3a;
+  margin: 0 auto;
+  animation: textFade 10s infinite;
+}
+
+.content-section-header > :first-child::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  width: 6px;
+  height: 6px;
+  background-color: #e05d5d;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 5px #e05d5d;
+  opacity: 0.7;
+  animation: pulse 2s infinite ease-in-out;
 }
 
 /* Container for the 3 sections */
 .content-sections-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
   gap: 15px;
   height: calc(100vh - 200px);
 }
@@ -111,7 +171,7 @@ body {
 /* Section specific styling - updated for 3 sections with swapped positions */
 .section-notes {
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -125,7 +185,22 @@ body {
 
 .section-calendar {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1;
+  overflow: hidden;
+}
+
+/* Livestream section styling */
+.section-livestream {
+  grid-column: 3;
+  grid-row: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-livestream .livestream-container {
+  flex: 1;
+  display: flex;
   overflow: hidden;
 }
 
@@ -337,13 +412,22 @@ body {
 @media (max-width: 1200px) {
   .content-sections-container {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    height: auto;
-    min-height: calc(100vh - 220px);
+    grid-template-rows: 1fr 1fr;
   }
   
-  .content-section {
-    min-height: 280px;
+  .section-notes {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  .section-calendar {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  .section-livestream {
+    grid-column: 1 / span 2;
+    grid-row: 2;
   }
 }
 
@@ -371,4 +455,771 @@ body {
 
 .section-notes {
   overflow: hidden;
+}
+
+/* Agent profile styling */
+.agent-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: #171717;
+  border: 1px solid #3a3a3a;
+  padding: 5px 10px;
+  border-radius: 2px;
+  font-family: 'Space Mono', monospace;
+  position: relative;
+}
+
+.agent-profile::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 70%;
+  background-color: #e05d5d;
+  opacity: 0.7;
+}
+
+.agent-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.agent-codename {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #e0e0e0;
+  letter-spacing: 1px;
+}
+
+.agent-id {
+  font-size: 0.7rem;
+  color: #e05d5d;
+  opacity: 0.8;
+  font-family: 'Courier New', monospace;
+}
+
+.agent-level-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-level-badge {
+  background-color: #222;
+  color: #00ff00;
+  font-size: 0.8rem;
+  padding: 2px 5px;
+  border: 1px solid #3a3a3a;
+  border-radius: 2px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.agent-xp-bar {
+  width: 120px;
+  height: 12px;
+  background-color: #222;
+  border: 1px solid #3a3a3a;
+  position: relative;
+  overflow: hidden;
+}
+
+.agent-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2a5e2a 0%, #00ff00 100%);
+  transition: width 0.3s ease;
+}
+
+.agent-xp-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Container for clearance badge and dropdown */
+.clearance-container {
+  position: relative;
+  margin-left: 8px;
+}
+
+/* SCP clearance styling */
+.scp-clearance-wrapper {
+  position: relative;
+  margin-left: 8px;
+}
+
+.scp-clearance {
+  display: flex;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  padding: 0;
+  font-family: 'Space Mono', monospace;
+  height: 24px;
+}
+
+/* Style for clearance badge when user can select levels */
+.scp-clearance.clearance-selector {
+  cursor: pointer;
+  background-color: #222;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.scp-clearance.clearance-selector:hover {
+  background-color: #2a2a2a;
+  border-color: #4a4a4a;
+}
+
+.scp-prefix {
+  background-color: #222;
+  color: #e05d5d;
+  font-weight: bold;
+  padding: 0 5px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  border-right: 1px solid #3a3a3a;
+  letter-spacing: 1px;
+}
+
+.scp-level {
+  color: #e0e0e0;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #3a3a3a;
+  letter-spacing: 1px;
+}
+
+.scp-name {
+  color: #e0e0e0;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  letter-spacing: 1px;
+}
+
+/* Dropdown arrow */
+.dropdown-arrow {
+  margin-left: 4px;
+  margin-right: 5px;
+  font-size: 0.6rem;
+  color: #888;
+}
+
+/* Clearance dropdown styling */
+.clearance-dropdown {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 200px;
+  background-color: #1a1a1a;
+  border: 2px solid #e05d5d; /* Make it very visible */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+
+.dropdown-header {
+  background-color: #222;
+  padding: 5px 8px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #e0e0e0;
+  border-bottom: 1px solid #3a3a3a;
+  text-align: center;
+}
+
+.dropdown-item {
+  padding: 6px 8px;
+  border-bottom: 1px solid #2a2a2a;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #2a2a2a;
+}
+
+.dropdown-item.active {
+  background-color: #333;
+}
+
+.dropdown-level {
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.dropdown-name {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* High level indicator */
+.high-level-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  color: #e05d5d;
+  font-weight: bold;
+  font-size: 0.6rem;
+  padding: 0 4px;
+  height: 16px;
+  margin-left: 5px;
+  border: 1px solid #e05d5d;
+  letter-spacing: 1px;
+}
+
+/* Level-specific styling with color coding */
+.scp-clearance[data-level="0"] {
+  border-left: 3px solid #666;
+}
+.scp-clearance[data-level="0"] .scp-name {
+  color: #888;
+}
+
+.scp-clearance[data-level="1"] {
+  border-left: 3px solid #44cc44;
+}
+.scp-clearance[data-level="1"] .scp-name {
+  color: #44cc44;
+}
+
+.scp-clearance[data-level="2"] {
+  border-left: 3px solid #4499cc;
+}
+.scp-clearance[data-level="2"] .scp-name {
+  color: #4499cc;
+}
+
+.scp-clearance[data-level="3"] {
+  border-left: 3px solid #ccaa44;
+}
+.scp-clearance[data-level="3"] .scp-name {
+  color: #ccaa44;
+}
+
+.scp-clearance[data-level="4"] {
+  border-left: 3px solid #cc6644;
+}
+.scp-clearance[data-level="4"] .scp-name {
+  color: #cc6644;
+}
+
+.scp-clearance[data-level="5"] {
+  border-left: 3px solid #e05d5d;
+}
+.scp-clearance[data-level="5"] .scp-name {
+  color: #e05d5d;
+}
+
+/* Same styling for dropdown items */
+.dropdown-item[data-level="0"] .dropdown-name {
+  color: #888;
+}
+
+.dropdown-item[data-level="1"] .dropdown-name {
+  color: #44cc44;
+}
+
+.dropdown-item[data-level="2"] .dropdown-name {
+  color: #4499cc;
+}
+
+.dropdown-item[data-level="3"] .dropdown-name {
+  color: #ccaa44;
+}
+
+.dropdown-item[data-level="4"] .dropdown-name {
+  color: #cc6644;
+}
+
+.dropdown-item[data-level="5"] .dropdown-name {
+  color: #e05d5d;
+}
+
+/* Debug indicator - will show if you're level 5+ */
+.debug-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #e05d5d;
+  color: #000;
+  font-size: 0.6rem;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+
+/* Simplified dropdown */
+.level-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 120px;
+  background-color: #1a1a1a;
+  border: 1px solid #e05d5d;
+  z-index: 1000;
+  margin-top: 2px;
+}
+
+.level-option {
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #333;
+}
+
+.level-option:hover {
+  background-color: #2a2a2a;
+}
+
+.level-option.selected {
+  background-color: #333;
+  font-weight: bold;
+}
+
+/* Level-specific styles based on data-level attribute */
+.scp-clearance[data-level="0"] {
+  border-left: 3px solid #666;
+}
+
+.scp-clearance[data-level="1"] {
+  border-left: 3px solid #44cc44;
+}
+
+.scp-clearance[data-level="2"] {
+  border-left: 3px solid #4499cc;
+}
+
+.scp-clearance[data-level="3"] {
+  border-left: 3px solid #ccaa44;
+}
+
+.scp-clearance[data-level="4"] {
+  border-left: 3px solid #cc6644;
+}
+
+.scp-clearance[data-level="5"] {
+  border-left: 3px solid #e05d5d;
+}
+
+/* Debug styles - uncomment to help troubleshoot */
+/*.clearance-dropdown {
+  border: 2px solid red !important;
+}*/
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .agent-level-container {
+    flex-wrap: wrap;
+  }
+  
+  .scp-clearance {
+    margin-top: 5px;
+    margin-left: 0;
+  }
+  
+  .clearance-dropdown {
+    width: 200px;
+    right: 0;
+    left: auto;
+  }
+}
+
+/* Add these new styles - they are intentionally very bold to ensure visibility */
+
+/* Debug indicator for high level */
+.high-level-debug {
+  background-color: #ff0000;
+  color: white;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 5px;
+  border: 1px solid black;
+}
+
+/* SCP Foundation clearance styles */
+
+/* SCP Clearance badge styles */
+.scp-clearance-container {
+  position: relative;
+  margin-left: 8px;
+}
+
+/* Main badge button */
+.scp-badge {
+  background-color: #161616;
+  border: 1px solid #3a3a3a;
+  padding: 0;
+  font-family: 'Space Mono', monospace;
+  height: 24px; /* Adjusted height for better fit */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center content horizontally */
+  cursor: default;
+  position: relative;
+  border-radius: 2px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  min-width: 120px; /* Ensure minimum width for proper text display */
+  max-width: fit-content; /* Allow growing based on content */
+}
+
+/* Terminal effect on badge background */
+.scp-badge::before {
+  content: none !important;
+}
+
+.scp-badge.high-level {
+  cursor: pointer;
+}
+
+.scp-badge.high-level:hover {
+  background-color: #222;
+}
+
+/* Badge content structure */
+.terminal-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 0 10px; /* Adjusted padding */
+}
+
+/* Clearance display container */
+.clearance-display {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+/* Stylized clearance name */
+.clearance-name-only {
+  font-weight: bold;
+  letter-spacing: 0.8px; /* Adjusted letter spacing */
+  font-size: 0.75rem; /* Slightly reduced font size */
+  text-transform: uppercase;
+  line-height: 1; /* Ensure proper line height */
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* Make sure no ::before pseudo element is adding content */
+.clearance-name-only::before {
+  content: none !important;
+}
+
+/* Make sure no prefix is being added through other means */
+.terminal-badge::before {
+  content: none !important;
+}
+
+/* Dropdown indicator positioning */
+.dropdown-indicator {
+  font-size: 0.5rem; /* Smaller dropdown icon */
+  color: #777;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Text glitch animation for hovering over high clearance */
+@keyframes textGlitch {
+  0% { transform: translate(0px, 0); }
+  1% { transform: translate(-1px, 0); }
+  2% { transform: translate(1px, 0); }
+  3% { transform: translate(0px, 0); }
+  20% { transform: translate(0px, 0); }
+  21% { transform: translate(1px, 0); }
+  22% { transform: translate(0px, 0); }
+  100% { transform: translate(0px, 0); }
+}
+
+.high-level:hover .clearance-name-only {
+  animation: textGlitch 2.5s infinite linear alternate-reverse;
+}
+
+/* Level-specific badge styling */
+.scp-badge[data-level="0"] {
+  border-left: 3px solid #777;
+}
+.scp-badge[data-level="0"] .clearance-name-only {
+  color: #aaa;
+}
+
+.scp-badge[data-level="1"] {
+  border-left: 3px solid #44cc44;
+}
+.scp-badge[data-level="1"] .clearance-name-only {
+  color: #55dd55;
+  text-shadow: 0 0 4px rgba(85, 221, 85, 0.2);
+}
+
+.scp-badge[data-level="2"] {
+  border-left: 3px solid #4499cc;
+}
+.scp-badge[data-level="2"] .clearance-name-only {
+  color: #55aaff;
+  text-shadow: 0 0 4px rgba(85, 170, 255, 0.2);
+}
+
+.scp-badge[data-level="3"] {
+  border-left: 3px solid #ccaa44;
+}
+.scp-badge[data-level="3"] .clearance-name-only {
+  color: #ddbb55;
+  text-shadow: 0 0 4px rgba(221, 187, 85, 0.2);
+}
+
+.scp-badge[data-level="4"] {
+  border-left: 3px solid #cc6644;
+}
+.scp-badge[data-level="4"] .clearance-name-only {
+  color: #ff7755;
+  text-shadow: 0 0 4px rgba(255, 119, 85, 0.2);
+}
+
+.scp-badge[data-level="5"] {
+  border-left: 3px solid #e05d5d;
+  background-color: #191919;
+}
+.scp-badge[data-level="5"] .clearance-name-only {
+  color: #ff5555;
+  text-shadow: 0 0 4px rgba(255, 85, 85, 0.3);
+}
+
+/* Specific effect for THAUMIEL clearance */
+.scp-badge[data-level="5"] .clearance-name-only::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    rgba(255, 85, 85, 0) 0%, 
+    rgba(255, 85, 85, 0.5) 50%,
+    rgba(255, 85, 85, 0) 100%
+  );
+  animation: scanBridge 3s infinite;
+}
+
+@keyframes scanBridge {
+  0% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(16px); opacity: 0; }
+  51% { transform: translateY(0); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0.5; }
+}
+
+/* Enhanced SCP Dropdown styling */
+
+/* Main dropdown container */
+.scp-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 190px;
+  background-color: rgba(20, 20, 20, 0.95);
+  border: 2px solid #333;
+  border-top: 2px solid #e05d5d;
+  z-index: 9999;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
+  margin-top: 3px;
+  overflow: hidden;
+  font-family: 'Space Mono', monospace;
+  transform: translateX(-30%); /* Center it better relative to the badge */
+}
+
+/* Terminal screen effect */
+.scp-dropdown::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Dropdown title */
+.dropdown-title {
+  padding: 8px;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  font-weight: bold;
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #444;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Title glow effect */
+.dropdown-title::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    rgba(224, 93, 93, 0) 0%, 
+    rgba(224, 93, 93, 0.5) 50%,
+    rgba(224, 93, 93, 0) 100%
+  );
+}
+
+/* Dropdown options */
+.dropdown-option {
+  width: 100%;
+  padding: 7px 10px;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #333;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background-color 0.15s, color 0.15s;
+  position: relative;
+}
+
+/* Option hover state */
+.dropdown-option:hover {
+  background-color: rgba(80, 80, 80, 0.3);
+}
+
+/* Selected state */
+.dropdown-option.selected {
+  background-color: rgba(80, 80, 80, 0.4);
+}
+
+/* Indicator for selected option */
+.dropdown-option.selected::before {
+  content: "■";
+  position: absolute;
+  left: 8px;
+  font-size: 0.5rem;
+  opacity: 0.8;
+}
+
+/* Footer styling */
+.dropdown-footer {
+  padding: 6px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #444;
+  font-size: 0.65rem;
+  text-align: center;
+  position: relative;
+}
+
+.footer-text {
+  color: #e05d5d;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Terminal glitch effect for footer */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.dropdown-footer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(
+    to bottom,
+    rgba(224, 93, 93, 0.15),
+    rgba(224, 93, 93, 0)
+  );
+  animation: scanline 8s linear infinite;
+  pointer-events: none;
+}
+
+/* Improved level-specific colors */
+.dropdown-option[data-level="0"] {
+  color: #aaa;
+  text-shadow: 0 0 5px rgba(170, 170, 170, 0.5);
+}
+
+.dropdown-option[data-level="1"] {
+  color: #55dd55;
+  text-shadow: 0 0 5px rgba(85, 221, 85, 0.5);
+}
+
+.dropdown-option[data-level="2"] {
+  color: #55aaff;
+  text-shadow: 0 0 5px rgba(85, 170, 255, 0.5);
+}
+
+.dropdown-option[data-level="3"] {
+  color: #ddbb55;
+  text-shadow: 0 0 5px rgba(221, 187, 85, 0.5);
+}
+
+.dropdown-option[data-level="4"] {
+  color: #ff7755;
+  text-shadow: 0 0 5px rgba(255, 119, 85, 0.5);
+}
+
+.dropdown-option[data-level="5"] {
+  color: #ff5555;
+  text-shadow: 0 0 5px rgba(255, 85, 85, 0.5);
+}
+
+/* Responsive adjustments to ensure good fit */
+@media (max-width: 768px) {
+  .scp-badge {
+    min-width: 100px;
+  }
+  
+  .clearance-name-only {
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+  }
 } 

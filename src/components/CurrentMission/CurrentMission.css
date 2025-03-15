@@ -234,7 +234,166 @@
 }
 
 .mission-item.completed {
-  opacity: 0.7;
+  position: relative;
+  border: 1px solid #2d3e36;
+  background-color: #0c1410;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  transform: translateZ(0);
+  overflow: hidden;
+}
+
+.mission-item.completed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(45deg, rgba(0, 0, 0, 0.15) 25%, transparent 25%, transparent 50%, 
+    rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.15) 75%, transparent 75%, transparent);
+  background-size: 4px 4px;
+  opacity: 0.3;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mission-item.completed::after {
+  content: "SCP FOUNDATION - SECURE. CONTAIN. PROTECT.";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: rgba(115, 191, 160, 0.06);
+  transform: rotate(-30deg) translateY(-50%);
+  letter-spacing: 2px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mission-item.completed .mission-checkbox {
+  color: #5ca67e;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-right-color: #2d3e36;
+  background-color: #0e1510;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mission-item.completed .mission-checkbox::before {
+  content: "✓";
+  position: absolute;
+  animation: secure-pulse 2s infinite alternate;
+}
+
+.mission-item.completed .mission-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(115, 191, 160, 0.3);
+  box-sizing: border-box;
+  animation: secure-scan 3s infinite linear;
+  opacity: 0.5;
+}
+
+.mission-item.completed .mission-name {
+  position: relative;
+  color: #a0a0a0;
+  text-decoration: none;
+  padding-right: 80px;
+}
+
+.mission-item.completed .mission-name::after {
+  content: "LEVEL 3/SECRET";
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.55rem;
+  color: #73BFA0;
+  background-color: #0c1410;
+  padding: 1px 4px;
+  border: 1px solid #2d3e36;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Health missions get Level 4 */
+.mission-item.completed .mission-details[style*="Health"] .mission-name::after {
+  content: "LEVEL 4/TOP SECRET";
+  color: #e0962c;
+  border-color: #553a14;
+}
+
+/* Productivity missions get Level 2 */
+.mission-item.completed .mission-details[style*="Productivity"] .mission-name::after {
+  content: "LEVEL 2/RESTRICTED";
+  color: #5ca4e0;
+  border-color: #294356;
+}
+
+/* Education missions get Level 1 */
+.mission-item.completed .mission-details[style*="Education"] .mission-name::after {
+  content: "LEVEL 1/CONFIDENTIAL";
+  color: #dbdbdb;
+  border-color: #444444;
+}
+
+/* Growth missions get Level 5 - rare! */
+.mission-item.completed .mission-details[style*="Growth"] .mission-name::after {
+  content: "LEVEL 5/THAUMIEL";
+  color: #e05d5d;
+  border-color: #4d2c2c;
+}
+
+.mission-item.completed .mission-description {
+  color: #707070;
+  position: relative;
+}
+
+.mission-item.completed .mission-description::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, 
+    transparent, 
+    transparent 5px, 
+    rgba(115, 191, 160, 0.3) 5px, 
+    rgba(115, 191, 160, 0.3) 10px);
+  opacity: 0.5;
+}
+
+.mission-item.completed .mission-category {
+  background-color: #0e1510;
+  color: #73BFA0;
+  border: 1px solid #2d3e36;
+  position: relative;
+  padding-left: 26px;
+  font-size: 0.6rem;
+  letter-spacing: 0.5px;
+}
+
+.mission-item.completed .mission-category::before {
+  content: "O5-";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  color: #73BFA0;
+  font-size: 0.6rem;
+  font-weight: bold;
 }
 
 .mission-checkbox {
@@ -335,4 +494,27 @@
     border-right: none;
     border-bottom: 1px solid #3a3a3a;
   }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes checkmark-appear {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes secure-scan {
+  0% { height: 0%; top: 0; }
+  50% { height: 100%; top: 0; }
+  50.01% { height: 0%; top: 100%; }
+  100% { height: 100%; top: 0; }
+}
+
+@keyframes secure-pulse {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
 } 

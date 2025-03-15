@@ -6,6 +6,7 @@ import {
   TaskProgress, 
   WeeklySchedule,
   UserStats,
+  UserProfile,
   MeditationSession,
   MeditationStats
 } from '../types';
@@ -16,6 +17,7 @@ interface AppContextType {
   currentSchedule: WeeklySchedule | null;
   taskProgress: TaskProgress[];
   stats: UserStats;
+  profile: UserProfile;
   meditationSessions: MeditationSession[];
   meditationStats: MeditationStats;
   addTask: (task: Task) => void;
@@ -25,6 +27,7 @@ interface AppContextType {
   resetProgress: () => void;
   addMeditationSession: (minutes: number, notes?: string) => void;
   deleteMeditationSession: (sessionId: string) => void;
+  gainXP: (amount: number) => void;
 }
 
 const defaultStats: UserStats = {
@@ -40,6 +43,17 @@ const defaultMeditationStats: MeditationStats = {
   currentStreak: 0,
   longestStreak: 0,
   lastMeditationDate: null,
+};
+
+const defaultProfile: UserProfile = {
+  agentId: "A-" + Math.floor(Math.random() * 9000 + 1000),
+  codename: "OPERATIVE",
+  level: 1,
+  xp: 0,
+  xpToNextLevel: 100,
+  clearanceLevel: "GAMMA",
+  tasksCompleted: 0,
+  missionHistory: 0,
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -78,6 +92,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     return savedStats ? JSON.parse(savedStats) : defaultStats;
   });
 
+  const [profile, setProfile] = useState<UserProfile>(() => {
+    const savedProfile = localStorage.getItem('profile');
+    return savedProfile ? JSON.parse(savedProfile) : defaultProfile;
+  });
+
   const [meditationSessions, setMeditationSessions] = useState<MeditationSession[]>(() => {
     const savedSessions = localStorage.getItem('meditationSessions');
     return savedSessions ? JSON.parse(savedSessions) : [];
@@ -104,6 +123,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('stats', JSON.stringify(stats));
   }, [stats]);
+
+  useEffect(() => {
+    localStorage.setItem('profile', JSON.stringify(profile));
+  }, [profile]);
 
   useEffect(() => {
     localStorage.setItem('meditationSessions', JSON.stringify(meditationSessions));
@@ -342,6 +365,46 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setTasks(prevTasks => [...prevTasks, task]);
   };
 
+  const gainXP = (amount: number) => {
+    setProfile(prevProfile => {
+      // Calculate new XP
+      const newXP = prevProfile.xp + amount;
+      
+      // Check if leveled up
+      if (newXP >= prevProfile.xpToNextLevel) {
+        // Calculate XP overflow for new level
+        const overflow = newXP - prevProfile.xpToNextLevel;
+        const newLevel = prevProfile.level + 1;
+        
+        // Increase XP requirement for each level
+        const newXPToNextLevel = Math.floor(prevProfile.xpToNextLevel * 1.5);
+        
+        // Determine clearance level based on agent level
+        let clearanceLevel = prevProfile.clearanceLevel;
+        if (newLevel >= 10) clearanceLevel = "ALPHA";
+        else if (newLevel >= 7) clearanceLevel = "BETA";
+        else if (newLevel >= 4) clearanceLevel = "DELTA";
+        else if (newLevel >= 2) clearanceLevel = "GAMMA";
+        
+        return {
+          ...prevProfile,
+          level: newLevel,
+          xp: overflow,
+          xpToNextLevel: newXPToNextLevel,
+          clearanceLevel,
+          tasksCompleted: prevProfile.tasksCompleted + 1
+        };
+      }
+      
+      // No level up, just add XP
+      return {
+        ...prevProfile,
+        xp: newXP,
+        tasksCompleted: prevProfile.tasksCompleted + 1
+      };
+    });
+  };
+
   // Function to delete a task
   const deleteTask = (taskId: string) => {
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
@@ -349,62 +412,78 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Function to mark a task as completed
   const completeTask = (taskId: string, hours: number) => {
-    const today = format(new Date(), 'yyyy-MM-dd');
+    // Find the corresponding task to get its category
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
     
     // Add to task progress
-    setTaskProgress(prev => [...prev, {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const newProgress: TaskProgress = {
+      id: generateId(),
       taskId,
-      completedDate: today,
-      actualHours: hours,
-      completed: true
-    }]);
+      date: today,
+      hours,
+      category: task.category || 'uncategorized'
+    };
+    
+    setTaskProgress(prev => [...prev, newProgress]);
+    
+    // Award XP for completing the task (base 20 XP + 5 XP per hour)
+    const xpGained = 20 + (hours * 5);
+    gainXP(xpGained);
     
     // Update stats
-    updateStats();
+    updateStats(task, hours);
   };
 
   // Function to update user stats
-  const updateStats = () => {
-    const completed = taskProgress.filter(p => p.completed).length;
-    const total = taskProgress.length || 1; // Prevent division by zero
-    const completionRate = completed / total;
-    
-    const totalHours = taskProgress.reduce((sum, p) => sum + p.actualHours, 0);
-    
-    // Calculate streak
-    let streak = 0;
-    const dates = [...new Set(taskProgress.map(p => p.completedDate))].sort();
-    
-    if (dates.length > 0) {
-      streak = 1;
-      for (let i = 1; i < dates.length; i++) {
-        const prev = new Date(dates[i-1]);
-        const curr = new Date(dates[i]);
-        const diffDays = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 1) {
-          streak++;
-        } else if (diffDays > 1) {
-          streak = 1;
+  const updateStats = (task: Task | null, hours: number) => {
+    // Update stats with the completed task
+    setStats(prevStats => {
+      // Calculate total hours logged
+      const newTotalHoursLogged = taskProgress.reduce((total, progress) => {
+        return total + progress.hours;
+      }, hours);
+
+      // Calculate task completion rate
+      const totalTasks = tasks.length;
+      const completedTasks = new Set(taskProgress.map(progress => progress.taskId)).size;
+      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+      // Calculate streak days
+      let currentStreak = prevStats.streakDays;
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const todayStr = format(today, 'yyyy-MM-dd');
+      const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+
+      // Check if there's a completion today
+      const hasCompletionToday = taskProgress.some(progress => progress.date === todayStr);
+
+      // Check if there's a completion yesterday
+      const hasCompletionYesterday = taskProgress.some(progress => progress.date === yesterdayStr);
+
+      // Update streak
+      if (hasCompletionToday) {
+        if (hasCompletionYesterday || currentStreak === 0) {
+          currentStreak += 1;
         }
+      } else if (!hasCompletionYesterday) {
+        currentStreak = 0;
       }
-    }
-    
-    // Calculate category summary
-    const categorySummary: Record<string, number> = {};
-    taskProgress.forEach(progress => {
-      const task = tasks.find(t => t.id === progress.taskId);
-      if (task) {
-        const category = task.category;
-        categorySummary[category] = (categorySummary[category] || 0) + progress.actualHours;
-      }
-    });
-    
-    setStats({
-      taskCompletionRate: completionRate,
-      totalHoursLogged: totalHours,
-      streakDays: streak,
-      taskCategorySummary: categorySummary
+
+      // Update category summary
+      const categorySummary = { ...prevStats.taskCategorySummary };
+      const category = task?.category || 'uncategorized';
+      categorySummary[category] = (categorySummary[category] || 0) + 1;
+
+      return {
+        taskCompletionRate: completionRate,
+        totalHoursLogged: newTotalHoursLogged,
+        streakDays: currentStreak,
+        taskCategorySummary: categorySummary
+      };
     });
   };
 
@@ -531,8 +610,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Add resetProgress to also clear meditation data
   const resetProgress = () => {
+    // Reset task progress and stats
     setTaskProgress([]);
     setStats(defaultStats);
+    
+    // Reset profile but keep the agent ID
+    const agentId = profile.agentId;
+    setProfile({
+      ...defaultProfile,
+      agentId
+    });
+    
+    // Reset meditation data
     setMeditationSessions([]);
     setMeditationStats(defaultMeditationStats);
   };
@@ -543,6 +632,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       currentSchedule,
       taskProgress,
       stats,
+      profile,
       meditationSessions,
       meditationStats,
       addTask,
@@ -551,7 +641,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       completeTask,
       resetProgress,
       addMeditationSession,
-      deleteMeditationSession
+      deleteMeditationSession,
+      gainXP
     }}>
       {children}
     </AppContext.Provider>
